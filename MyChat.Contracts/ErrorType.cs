@@ -35,6 +35,11 @@ namespace MyChat.Contracts
         UnknownUser,
 
         /// <summary>
+        /// User is already connected.
+        /// </summary>
+        AlreadyConnectedUser,
+
+        /// <summary>
         /// A security error.
         /// </summary>
         SecurityError,

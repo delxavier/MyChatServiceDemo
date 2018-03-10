@@ -31,7 +31,7 @@ namespace MyChat.Service.Logging
                 throw new ArgumentNullException(paramName: nameof(logMessage));
             }
 
-            this.Write(item: new LogItem(trackInfo: trackInfo, severity: severity, category: string.Empty, message: logMessage, exception: null));
+            Write(item: new LogItem(trackInfo: trackInfo, severity: severity, category: string.Empty, message: logMessage, exception: null));
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace MyChat.Service.Logging
                 throw new ArgumentNullException(paramName: nameof(exception));
             }
 
-            this.Write(item: new LogItem(trackInfo: trackInfo, severity: severity, category: string.Empty, message: logMessage, exception: null));
+            Write(item: new LogItem(trackInfo: trackInfo, severity: severity, category: string.Empty, message: logMessage, exception: null));
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace MyChat.Service.Logging
         /// Writes a <see cref="LogItem"/>.
         /// </summary>
         /// <param name="item">The <see cref="LogItem"/>.</param>
-        private void Write(LogItem item)
+        private static void Write(LogItem item)
         {
             if (item == null)
             {
@@ -170,8 +170,9 @@ namespace MyChat.Service.Logging
 
             string message = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}|{1}|{2}|{3}|{4}",
+                "{0}|{1}|{2}|{3}|{4}|{5}",
                 item.Timestamp.ToString(format: "yyyyMMdd/HH:mm:ss:FFF", provider: CultureInfo.InvariantCulture),
+                item.TrackInfo,
                 item.Severity,
                 item.Category,
                 item.Message,

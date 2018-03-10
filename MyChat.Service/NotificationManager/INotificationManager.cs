@@ -1,9 +1,9 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IConnectionManager.cs">
+// <copyright file="INotificationManager.cs">
 //    Copyright (c) 2018. All Rights reserved.
 // </copyright>
 // <summary>
-//    This interface defines the client connection manager.
+//    This interface defines the client notification manager.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -12,9 +12,9 @@ namespace MyChat.Service.ConnectionManager
     using MyChat.Service.Model;
 
     /// <summary>
-    /// This interface defines the client connection manager.
+    /// This interface defines the client notification manager.
     /// </summary>
-    internal interface IConnectionManager
+    internal interface INotificationManager
     {
         /// <summary>
         /// Notifies all connected clients that an user state has changed.

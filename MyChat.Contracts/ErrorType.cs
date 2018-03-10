@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ErrorType.cs"
+// <copyright file="ErrorType.cs">
 //    Copyright (c) 2018. All Rights reserved.
 // </copyright>
 // <summary>

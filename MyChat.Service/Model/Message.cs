@@ -26,6 +26,7 @@ namespace MyChat.Service.Model
         {
             this.OwnerId = ownerId;
             this.Content = content ?? throw new ArgumentNullException(paramName: nameof(content));
+            this.DateTime = dateTime;
         }
 
         /// <summary>

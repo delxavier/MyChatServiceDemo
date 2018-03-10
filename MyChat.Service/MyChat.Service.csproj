@@ -48,21 +48,11 @@
     <Reference Include="System.ServiceModel.Activation" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClassExtender\MessageExtender.cs" />
-    <Compile Include="ClassExtender\UserExtender.cs" />
-    <Compile Include="FaultExceptionHelper.cs" />
-    <Compile Include="Hosting\MyChatServiceHost.cs" />
-    <Compile Include="Hosting\MyChatServiceHostFactory.cs" />
-    <Compile Include="Hosting\MyChatServiceInstanceProvider.cs" />
-    <Compile Include="Logging\ILogger.cs" />
-    <Compile Include="Logging\OutputLogger.cs" />
-    <Compile Include="Logging\SeverityLevel.cs" />
     <Compile Include="Model\IDataStore.cs" />
     <Compile Include="Model\InMemoryDataStore.cs" />
     <Compile Include="Model\Message.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Model\UserState.cs" />
-    <Compile Include="MyChatService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

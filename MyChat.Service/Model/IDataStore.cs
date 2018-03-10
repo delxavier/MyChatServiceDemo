@@ -44,6 +44,20 @@ namespace MyChat.Service.Model
         User LoadUser(int userId);
 
         /// <summary>
+        /// Loads an user by its name.
+        /// </summary>
+        /// <param name="userName">The user name.</param>
+        /// <returns>The found <see cref="User"/>.</returns>
+        User LoadUser(string userName);
+
+        /// <summary>
+        /// Checks if an user with this name exists.
+        /// </summary>
+        /// <param name="userName">The user name.</param>
+        /// <returns>True if an user is found otherwise false.</returns>
+        bool UserExist(string userName);
+
+        /// <summary>
         /// Loads all users.
         /// </summary>
         /// <returns>The list of <see cref="User"/>.</returns>

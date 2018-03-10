@@ -97,6 +97,36 @@ namespace MyChat.Service.Model
         }
 
         /// <summary>
+        /// Loads an user by its name.
+        /// </summary>
+        /// <param name="userName">The user name.</param>
+        /// <returns>The found <see cref="User"/>.</returns>
+        public User LoadUser(string userName)
+        {
+            if (string.IsNullOrEmpty(value: userName))
+            {
+                throw new ArgumentNullException(paramName: nameof(userName));
+            }
+
+            return this.users.Values.Single(predicate: user => string.Equals(a: userName, b: user.UserName, comparisonType: StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Checks if an user with this name exists.
+        /// </summary>
+        /// <param name="userName">The user name.</param>
+        /// <returns>True if an user is found otherwise false.</returns>
+        public bool UserExist(string userName)
+        {
+            if (string.IsNullOrEmpty(value: userName))
+            {
+                throw new ArgumentNullException(paramName: nameof(userName));
+            }
+
+            return this.users.Values.SingleOrDefault(predicate: user => string.Equals(a: userName, b: user.UserName, comparisonType: StringComparison.OrdinalIgnoreCase)) != null;
+        }
+
+        /// <summary>
         /// Loads all users.
         /// </summary>
         /// <returns>The list of <see cref="User"/>.</returns>

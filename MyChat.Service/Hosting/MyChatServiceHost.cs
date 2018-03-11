@@ -22,8 +22,9 @@ namespace MyChat.Service.Hosting
         /// Initializes a new instance of the <see cref="MyChatServiceHost"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="hostFactory">The <see cref="MyChatServiceHostFactory"/> instance.</param>
         /// <param name="baseAddresses">The base addresses.</param>
-        public MyChatServiceHost(ILogger logger, params Uri[] baseAddresses)
+        public MyChatServiceHost(ILogger logger, MyChatServiceHostFactory hostFactory, params Uri[] baseAddresses)
             : base(serviceType: typeof(MyChatService), baseAddresses: baseAddresses)
         {
             if (logger == null)
@@ -31,7 +32,12 @@ namespace MyChat.Service.Hosting
                 throw new ArgumentNullException(paramName: nameof(logger));
             }
 
-            var instanceProvider = new MyChatServiceInstanceProvider(logger: logger);
+            if (hostFactory == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(hostFactory));
+            }
+
+            var instanceProvider = new MyChatServiceInstanceProvider(logger: logger, hostFactory: hostFactory);
             foreach (var cd in this.ImplementedContracts.Values)
             {
                 cd.Behaviors.Add(item: instanceProvider);

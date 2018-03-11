@@ -34,7 +34,7 @@ namespace MyChat.Service.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("localhost")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ws://0.0.0.0")]
         public string NotificationManagerUri {
             get {
                 return ((string)(this["NotificationManagerUri"]));

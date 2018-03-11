@@ -20,7 +20,15 @@ namespace MyChat.Service.Model
         private readonly List<byte> picture = new List<byte>();
 
         /// <summary>
-        /// Intializes a new instance of the <see cref="User"/> class.
+        /// Initializes a new instance of the <see cref="User"/> class.
+        /// </summary>
+        public User()
+        {
+            this.UserId = 0;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="User"/> class.
         /// </summary>
         /// <param name="userId">The user ID.</param>
         public User(int userId)

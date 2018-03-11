@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="FaultExceptionHelper.cs"
+// <copyright file="FaultExceptionHelper.cs">
 //     Copyright (c) 2018. All Rights reserved.
 // </copyright>
 // <summary>

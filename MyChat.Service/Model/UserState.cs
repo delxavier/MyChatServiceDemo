@@ -12,7 +12,7 @@ namespace MyChat.Service.Model
     /// <summary>
     /// This is the list of all available value of user state.
     /// </summary>
-    public enum UserState
+    internal enum UserState
     {
         /// <summary>
         /// This is a new user.

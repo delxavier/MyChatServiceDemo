@@ -17,11 +17,13 @@ namespace MyChat.Service.Hosting
     using System.ServiceModel.Dispatcher;
     using MyChat.Service.Logging;
     using MyChat.Service.Model;
+    using MyChat.Service.Properties;
     using Message = System.ServiceModel.Channels.Message;
 
     /// <summary>
     /// Instance provider for chat service.
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposition is done during web service unload")]
     internal sealed class MyChatServiceInstanceProvider : IInstanceProvider, IContractBehavior
     {
         /// <summary> The <see cref="ILogger"/> instance. </summary>
@@ -30,13 +32,29 @@ namespace MyChat.Service.Hosting
         /// <summary> The <see cref="IDataStore"/> instance. </summary>
         private readonly IDataStore dataStore = new InMemoryDataStore();
 
+        /// <summary> The <see cref="NotificationManager"/> instance. </summary>
+        private readonly NotificationManager notificationManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MyChatServiceInstanceProvider"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
-        public MyChatServiceInstanceProvider(ILogger logger)
+        /// <param name="hostFactory">The <see cref="MyChatServiceHostFactory"/> instance.</param>
+        public MyChatServiceInstanceProvider(ILogger logger, MyChatServiceHostFactory hostFactory)
         {
+            if (hostFactory == null)
+            {
+                throw new ArgumentNullException(paramName: nameof(hostFactory));
+            }
+
             this.logger = logger ?? throw new ArgumentNullException(paramName: nameof(logger));
+            this.notificationManager = new NotificationManager(
+                logger: logger,
+                dataStore: dataStore,
+                port: Settings.Default.NotificationManagerPort,
+                uri: Settings.Default.NotificationManagerUri);
+
+            hostFactory.RegisterToDisposition(@object: this.notificationManager);
         }
 
         /// <summary>
@@ -55,9 +73,10 @@ namespace MyChat.Service.Hosting
         /// </summary>
         /// <param name="instanceContext">The current <see cref="T:System.ServiceModel.InstanceContext"/> object.</param>
         /// <returns>A user-defined service object.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposition is done during web service session close")]
         public object GetInstance(InstanceContext instanceContext)
         {
-            return new MyChatService(logger: this.logger, store: this.dataStore);            
+            return new MyChatService(logger: this.logger, store: this.dataStore, notificationManager: this.notificationManager);            
         }
 
         /// <summary>

@@ -18,10 +18,11 @@ namespace MyChat.Service.Model
     internal interface IDataStore
     {
         /// <summary>
-        /// Adds or updates an user into the datastore.
+        /// Adds or updates an user into the data store.
         /// </summary>
         /// <param name="user">The <see cref="User"/>.</param>
-        void AddOrUpdateUser(User user);
+        /// <returns>The user ID.</returns>
+        int AddOrUpdateUser(User user);
 
         /// <summary>
         /// Updates an user state.
@@ -31,7 +32,7 @@ namespace MyChat.Service.Model
         void UpdateUserState(int userId, UserState state);
 
         /// <summary>
-        /// Removes an user from the datastore.
+        /// Removes an user from the data store.
         /// </summary>
         /// <param name="userId">The user ID.</param>
         void DeleteUser(int userId);
@@ -64,7 +65,7 @@ namespace MyChat.Service.Model
         IReadOnlyCollection<User> LoadAllUsers();
 
         /// <summary>
-        /// Adds a message into the datastore.
+        /// Adds a message into the data store.
         /// </summary>
         /// <param name="message">The <see cref="Message"/>.</param>
         void AddMessage(Message message);

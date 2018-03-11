@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace MyChat.Service.ConnectionManager
+namespace MyChat.Service
 {
     using MyChat.Service.Model;
 
@@ -22,6 +22,12 @@ namespace MyChat.Service.ConnectionManager
         /// <param name="userId">The user ID.</param>
         /// <param name="state">The new <see cref="UserState"/>.</param>
         void NotifyUserStateChange(int userId, UserState state);
+
+        /// <summary>
+        /// Notifies all connected clients that an user has changed.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        void NotifyUserChange(int userId);
 
         /// <summary>
         /// Notifies a new incoming <see cref="Message"/>.

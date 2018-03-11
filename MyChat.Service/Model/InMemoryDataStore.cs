@@ -33,10 +33,11 @@ namespace MyChat.Service.Model
         private readonly ConcurrentQueue<Message> messages = new ConcurrentQueue<Message>();
 
         /// <summary>
-        /// Adds or updates an user into the datastore.
+        /// Adds or updates an user into the data store.
         /// </summary>
         /// <param name="user">The <see cref="User"/>.</param>
-        public void AddOrUpdateUser(User user)
+        /// <returns>The user ID.</returns>
+        public int AddOrUpdateUser(User user)
         {
             if (user == null)
             {
@@ -48,7 +49,24 @@ namespace MyChat.Service.Model
                 throw new ArgumentNullException(paramName: nameof(user), message: "user name can't be null");
             }
 
+            if (user.UserId == 0)
+            {
+                User knownUser = this.users.Values.SingleOrDefault(
+                    predicate: item => string.Equals(a: user.UserName, b: item.UserName, comparisonType: StringComparison.OrdinalIgnoreCase));
+
+                if (knownUser != null)
+                {
+                    return knownUser.UserId;
+                }
+
+                int userId = this.users.Keys.Max() + 1;
+                var newUser = new User(userId: userId) { Picture = user.Picture, State = UserState.New, UserName = user.UserName };
+                this.users.AddOrUpdate(key: newUser.UserId, addValue: newUser, updateValueFactory: (key, oldValue) => newUser);
+                return userId;
+            }
+
             this.users.AddOrUpdate(key: user.UserId, addValue: user, updateValueFactory: (key, oldValue) => user);
+            return user.UserId;
         }
 
         /// <summary>
@@ -68,7 +86,7 @@ namespace MyChat.Service.Model
         }
 
         /// <summary>
-        /// Removes an user from the datastore.
+        /// Removes an user from the data store.
         /// </summary>
         /// <param name="userId">The user ID.</param>
         public void DeleteUser(int userId)
@@ -136,7 +154,7 @@ namespace MyChat.Service.Model
         }
 
         /// <summary>
-        /// Adds a message into the datastore.
+        /// Adds a message into the data store.
         /// </summary>
         /// <param name="message">The <see cref="Message"/>.</param>
         public void AddMessage(Message message)

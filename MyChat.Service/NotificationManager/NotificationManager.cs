@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace MyChat.Service.ConnectionManager
+namespace MyChat.Service
 {
     using System;
     using System.Collections.Concurrent;
@@ -45,7 +45,7 @@ namespace MyChat.Service.ConnectionManager
         /// <param name="dataStore">The <see cref="IDataStore"/> instance.</param>
         /// <param name="port">The listening port.</param>
         /// <param name="uri">The listening uri.</param>
-        public NotificationManager(ILogger logger, IDataStore dataStore, int port, Uri uri)
+        public NotificationManager(ILogger logger, IDataStore dataStore, int port, string uri)
         {
             if (uri == null)
             {
@@ -60,7 +60,7 @@ namespace MyChat.Service.ConnectionManager
                 uri.ToString(),
                 port);
 
-            this.socketServer = new WebSocketServer(port: port, location: uri.ToString());
+            this.socketServer = new WebSocketServer(port: port, location: uri);
             this.socketServer.Start(
                 config: connection =>
                 {
@@ -96,6 +96,22 @@ namespace MyChat.Service.ConnectionManager
         public void NotifyUserStateChange(int userId, UserState state)
         {
             var contract = new Contracts.UserStateUpdateMessage { UserId = userId, State = (Contracts.UserState)(int)state };
+            foreach (var client in this.clients)
+            {
+                if (client.Value.Item2 != userId)
+                {
+                    this.SendMessage(connection: client.Key, message: contract);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Notifies all connected clients that an user has changed.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        public void NotifyUserChange(int userId)
+        {
+            var contract = new Contracts.UserProfileUpdateMessage { UserId = userId };
             foreach (var client in this.clients)
             {
                 if (client.Value.Item2 != userId)

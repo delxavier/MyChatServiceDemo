@@ -18,10 +18,5 @@ namespace MyChat.Contracts
         /// Gets or sets the user ID.
         /// </summary>
         public int UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the authentication key for this user.
-        /// </summary>
-        public string AuthenticationKey { get; set; }
     }
 }

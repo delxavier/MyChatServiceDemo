@@ -24,7 +24,7 @@ namespace MyChat.Service
     [ServiceBehavior(
                      ConcurrencyMode = ConcurrencyMode.Multiple,
                      InstanceContextMode = InstanceContextMode.PerSession)]
-    internal sealed class MyChatService : IMyChatService
+    internal sealed class MyChatService : IMyChatService, IDisposable
     {
         /// <summary> The count of instances running. </summary>
         private static int runningInstances;
@@ -38,19 +38,27 @@ namespace MyChat.Service
         /// <summary> The <see cref="IDataStore"/> instance. </summary>
         private readonly IDataStore store;
 
+        /// <summary> The <see cref="INotificationManager"/> instance. </summary>
+        private readonly INotificationManager notificationManager;
+
         /// <summary> The connected user ID. </summary>
-        private int userId;
+        private int currentUserId;
+
+        /// <summary> A flag to know if session is closed by user. </summary>
+        private bool sessionCloseByUser = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MyChatService"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance.</param>
         /// <param name="store">The <see cref="IDataStore"/> instance.</param>
-        public MyChatService(ILogger logger, IDataStore store)
+        /// <param name="notificationManager">The <see cref="INotificationManager"/> instance.</param>
+        public MyChatService(ILogger logger, IDataStore store, INotificationManager notificationManager)
         {
             this.logger = logger ?? throw new ArgumentNullException(paramName: nameof(logger));
             this.store = store ?? throw new ArgumentNullException(paramName: nameof(store));
-            
+            this.notificationManager = notificationManager ?? throw new ArgumentNullException(paramName: nameof(notificationManager));
+
             this.logger.Format(                
                 SeverityLevel.Debug,
                 this.sessionId.GetHashCode(),
@@ -88,7 +96,13 @@ namespace MyChat.Service
         /// <returns>The <see cref="ConnectionResult"/>.</returns>
         public ConnectionResult OpenSession(string userName)
         {
-
+            return this.ManageException(
+                action: () =>
+                {
+                    this.currentUserId = this.store.AddOrUpdateUser(user: new User { UserName = userName });
+                    return new ConnectionResult { UserId = this.currentUserId };
+                },
+                description: "OpenSession");
         }
 
         /// <summary>
@@ -97,7 +111,12 @@ namespace MyChat.Service
         public void CloseSession()
         {
             this.ManageException(
-                action: () => this.store.UpdateUserState(userId: this.userId, state: Model.UserState.Offline),
+                action: () =>
+                {
+                    this.store.UpdateUserState(userId: this.currentUserId, state: Model.UserState.Offline);
+                    this.notificationManager.NotifyUserStateChange(userId: this.currentUserId, state: Model.UserState.Offline);
+                    this.sessionCloseByUser = true;
+                },
                 description: "CloseSession");
         }
 
@@ -107,7 +126,12 @@ namespace MyChat.Service
         public void LeaveChat()
         {
             this.ManageException(
-                action: () => this.store.DeleteUser(userId: this.userId),
+                action: () =>
+                {
+                    this.store.DeleteUser(userId: this.currentUserId);
+                    this.notificationManager.NotifyUserStateChange(userId: this.currentUserId, state: Model.UserState.Deleted);
+                    this.sessionCloseByUser = true;
+                },
                 description: "LeaveChat");
         }
 
@@ -141,7 +165,26 @@ namespace MyChat.Service
         public void UpdateMyProfile(UserContract user)
         {
             this.ManageException(
-                action: () => this.store.AddOrUpdateUser(user: user.FromContract()),
+                action: () =>
+                {
+                    if (user == null)
+                    {
+                        throw new InvalidOperationException(message: "user can't be null");
+                    }
+
+                    if (user.UserId <= 0)
+                    {
+                        throw new InvalidOperationException(message: "unknown user");
+                    }
+
+                    if (user.UserId != this.currentUserId)
+                    {
+                        throw new InvalidOperationException(message: "not allowed to update profile");
+                    }
+
+                    this.store.AddOrUpdateUser(user: user.FromContract());
+                    this.notificationManager.NotifyUserChange(userId: user.UserId);
+                },
                 description: "UpdateMyProfile");
         }
 
@@ -164,7 +207,12 @@ namespace MyChat.Service
         public void SendMessage(MessageContract message)
         {
             this.ManageException(
-                action: () => this.store.AddMessage(message: message.FromContract()),
+                action: () =>
+                {
+                    var newMessage = message.FromContract();
+                    this.store.AddMessage(message: newMessage);
+                    this.notificationManager.NotifyNewMessage(message: newMessage);
+                },
                 description: "SendMessage");
         }
 
@@ -174,7 +222,11 @@ namespace MyChat.Service
         public void StartWrite()
         {
             this.ManageException(
-                action: () => this.store.UpdateUserState(userId: this.userId, state: Model.UserState.Writing),
+                action: () =>
+                {
+                    this.store.UpdateUserState(userId: this.currentUserId, state: Model.UserState.Writing);
+                    this.notificationManager.NotifyUserStateChange(userId: this.currentUserId, state: Model.UserState.Writing);
+                },
                 description: "StartWrite");
         }
 
@@ -184,7 +236,11 @@ namespace MyChat.Service
         public void CancelWrite()
         {
             this.ManageException(
-                action: () => this.store.UpdateUserState(userId: this.userId, state: Model.UserState.Online),
+                action: () =>
+                {
+                    this.store.UpdateUserState(userId: this.currentUserId, state: Model.UserState.Online);
+                    this.notificationManager.NotifyUserStateChange(userId: this.currentUserId, state: Model.UserState.Online);
+                },
                 description: "CancelWrite");
         }
 
@@ -298,6 +354,7 @@ namespace MyChat.Service
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "OK here. Don't want exception in disposition code")]
         private void Dispose(bool disposing)
         {
             if (!this.Disposed)
@@ -310,6 +367,23 @@ namespace MyChat.Service
                         "Service instance is disposed for session ({0}), {1} instances remaining",
                         this.sessionId,
                         Interlocked.Decrement(ref runningInstances));
+                }
+
+                if (!this.sessionCloseByUser)
+                {
+                    try
+                    {
+                        this.store.UpdateUserState(userId: this.currentUserId, state: Model.UserState.Offline);
+                        this.notificationManager.NotifyUserStateChange(userId: this.currentUserId, state: Model.UserState.Offline);
+                    }
+                    catch (Exception exception)
+                    {
+                        this.logger.FormatException(
+                            exception: exception,
+                            severity: SeverityLevel.Error,
+                            logMessageFormat: "An error occurs during user {0} session closed",
+                            args: this.currentUserId);
+                    }
                 }
 
                 this.Disposed = true;

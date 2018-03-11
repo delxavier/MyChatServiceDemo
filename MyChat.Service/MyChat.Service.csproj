@@ -54,6 +54,13 @@
     <Reference Include="System.ServiceModel.Activation" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassExtender\MessageExtender.cs" />
+    <Compile Include="ClassExtender\UserExtender.cs" />
+    <Compile Include="FaultExceptionHelper.cs" />
+    <Compile Include="Hosting\MyChatServiceHost.cs" />
+    <Compile Include="Hosting\MyChatServiceHostFactory.cs" />
+    <Compile Include="Hosting\MyChatServiceInstanceProvider.cs" />
+    <Compile Include="MyChatService.cs" />
     <Compile Include="Properties\GlobalSuppressions.cs" />
     <Compile Include="NotificationManager\NotificationManager.cs" />
     <Compile Include="NotificationManager\INotificationManager.cs" />
@@ -71,14 +78,26 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\MyChat.ruleset">
       <Link>Properties\MyChat.ruleset</Link>
     </None>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\MyChat.Service.snk" />
-    <None Include="Settings.StyleCop" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Settings.StyleCop">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MyChat.Contracts\MyChat.Contracts.csproj">
@@ -92,6 +111,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Visual-StyleCop.MSBuild.4.7.59.0\build\Visual-StyleCop.MSBuild.Targets" Condition="Exists('..\packages\Visual-StyleCop.MSBuild.4.7.59.0\build\Visual-StyleCop.MSBuild.Targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

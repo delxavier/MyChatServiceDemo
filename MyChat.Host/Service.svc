@@ -1,0 +1,3 @@
+﻿<%@ ServiceHost language="C#" Service="Chat Service"
+Factory="MyChat.Service.MyChatServiceHostFactory, MyChat.Service"
+%> 

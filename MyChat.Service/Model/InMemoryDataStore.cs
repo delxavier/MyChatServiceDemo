@@ -59,7 +59,7 @@ namespace MyChat.Service.Model
                     return knownUser.UserId;
                 }
 
-                int userId = this.users.Keys.Max() + 1;
+                int userId = this.users.Count > 0 ? this.users.Keys.Max() + 1 : 1;
                 var newUser = new User(userId: userId) { Picture = user.Picture, State = UserState.New, UserName = user.UserName };
                 this.users.AddOrUpdate(key: newUser.UserId, addValue: newUser, updateValueFactory: (key, oldValue) => newUser);
                 return userId;
@@ -91,8 +91,7 @@ namespace MyChat.Service.Model
         /// <param name="userId">The user ID.</param>
         public void DeleteUser(int userId)
         {
-            User user;
-            if (!this.users.TryRemove(key: userId, value: out user))
+            if (!this.users.TryRemove(key: userId, value: out var user))
             {
                 throw new ArgumentOutOfRangeException(paramName: nameof(userId), message: "User not found");
             }
@@ -175,8 +174,7 @@ namespace MyChat.Service.Model
 
                     while (this.messages.Count > MessagesCountMax)
                     {
-                        Message deletedMessage;
-                        this.messages.TryDequeue(result: out deletedMessage);
+                        this.messages.TryDequeue(result: out var deletedMessage);
                     };
                 });
             }

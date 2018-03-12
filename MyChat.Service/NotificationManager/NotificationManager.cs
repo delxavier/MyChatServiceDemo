@@ -45,6 +45,7 @@ namespace MyChat.Service
         /// <param name="dataStore">The <see cref="IDataStore"/> instance.</param>
         /// <param name="port">The listening port.</param>
         /// <param name="uri">The listening uri.</param>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "OK here")]
         public NotificationManager(ILogger logger, IDataStore dataStore, int port, string uri)
         {
             if (uri == null)
@@ -60,7 +61,11 @@ namespace MyChat.Service
                 uri.ToString(),
                 port);
 
-            this.socketServer = new WebSocketServer(port: port, location: uri);
+            this.socketServer = new WebSocketServer(port: port, location: uri)
+            {
+                RestartAfterListenError = true
+            };
+
             this.socketServer.Start(
                 config: connection =>
                 {
@@ -98,9 +103,15 @@ namespace MyChat.Service
             var contract = new Contracts.UserStateUpdateMessage { UserId = userId, State = (Contracts.UserState)(int)state };
             foreach (var client in this.clients)
             {
-                if (client.Value.Item2 != userId)
+                this.SendMessage(connection: client.Key, message: contract);
+            }
+
+            if (state == UserState.Offline || state == UserState.Deleted)
+            {
+                var clientsToDelete = this.clients.Where(predicate: item => item.Value.Item2 == userId);
+                foreach (var client in clientsToDelete)
                 {
-                    this.SendMessage(connection: client.Key, message: contract);
+                    this.clients.TryRemove(key: client.Key, value: out var delClient);
                 }
             }
         }
@@ -114,10 +125,7 @@ namespace MyChat.Service
             var contract = new Contracts.UserProfileUpdateMessage { UserId = userId };
             foreach (var client in this.clients)
             {
-                if (client.Value.Item2 != userId)
-                {
-                    this.SendMessage(connection: client.Key, message: contract);
-                }
+                this.SendMessage(connection: client.Key, message: contract);
             }
         }
 
@@ -135,10 +143,7 @@ namespace MyChat.Service
             var contract = new Contracts.MessageContract { OwnerId = message.OwnerId, Content = message.Content, DateTime = message.DateTime };
             foreach (var client in this.clients)
             {
-                if (client.Value.Item2 != message.OwnerId)
-                {
-                    this.SendMessage(connection: client.Key, message: contract);
-                }
+                this.SendMessage(connection: client.Key, message: contract);
             }
         }
 

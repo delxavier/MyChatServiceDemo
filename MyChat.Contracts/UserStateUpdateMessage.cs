@@ -3,14 +3,14 @@
 //    Copyright (c) 2018. All Rights reserved.
 // </copyright>
 // <summary>
-//    This class defines the message sent my server when an user state is updated.
+//    This class defines the message sent by server when an user state is updated.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace MyChat.Contracts
 {
     /// <summary>
-    /// This class defines the message sent my server when an user state is updated.
+    /// This class defines the message sent by server when an user state is updated.
     /// </summary>
     public sealed class UserStateUpdateMessage
     {

@@ -99,7 +99,18 @@ namespace MyChat.Service
             return this.ManageException(
                 action: () =>
                 {
+                    if (this.store.UserExist(userName: userName))
+                    {
+                        User user = this.store.LoadUser(userName: userName);
+                        if (user.State != Model.UserState.Offline)
+                        {
+                            throw FaultExceptionHelper.From(error: ErrorType.AlreadyConnectedUser, exception: null);
+                        }
+                    }
+
                     this.currentUserId = this.store.AddOrUpdateUser(user: new User { UserName = userName });
+                    this.store.UpdateUserState(userId: this.currentUserId, state: Model.UserState.Online);
+                    this.notificationManager.NotifyUserStateChange(userId: this.currentUserId, state: Model.UserState.Online);
                     return new ConnectionResult { UserId = this.currentUserId };
                 },
                 description: "OpenSession");
@@ -180,6 +191,15 @@ namespace MyChat.Service
                     if (user.UserId != this.currentUserId)
                     {
                         throw new InvalidOperationException(message: "not allowed to update profile");
+                    }
+
+                    if (this.store.UserExist(userName: user.UserName))
+                    {
+                        var knownUser = this.store.LoadUser(userName: user.UserName);
+                        if (knownUser.UserId != user.UserId)
+                        {
+                            throw FaultExceptionHelper.From(error: ErrorType.AlreadyConnectedUser, exception: null);
+                        }
                     }
 
                     this.store.AddOrUpdateUser(user: user.FromContract());

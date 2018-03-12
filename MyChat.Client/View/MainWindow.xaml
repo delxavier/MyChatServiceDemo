@@ -1,0 +1,113 @@
+﻿<Window x:Class="MyChat.Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MyChat.Client"
+        mc:Ignorable="d"
+        Title="MyChat" Height="350" Width="525">
+    <Window.Resources>
+        <ResourceDictionary>
+            <local:EnumToImageConverter x:Key="EnumToImageConverter" />
+            <local:VisibilityConverter x:Key="VisibilityConverter" />
+            <local:ConnectionStateConverter x:Key="ConnectionStateConverter" />
+            <local:ByteToImageConverter x:Key="ByteToImageConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical">
+            <Label Content="My profile" Visibility="{Binding Path=Connected, Converter={StaticResource VisibilityConverter}}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"/>
+                </Grid.RowDefinitions>
+                <Label Content="My name" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <TextBox Text="{Binding Path=UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" AcceptsReturn="True" Width="250" />
+                <Button Command="{Binding Path=ConnectCommand}"
+                        Content="{Binding Path=Connected, Converter={StaticResource ConnectionStateConverter}}" 
+                        Grid.Column="2" 
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" 
+                        Width="75"
+                        Margin="10,0,0,0"/>
+            </Grid>
+            <Label Content="{Binding Path=ErrorMessage}" Visibility="{Binding Path=HasError, Converter={StaticResource VisibilityConverter}}" Foreground="Red"/>            
+            <Grid Visibility="{Binding Path=Connected, Converter={StaticResource VisibilityConverter}}" >                
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition Height="48"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="My avatar" />
+                    <Button Command="{Binding Path=ChangeImageCommand}"
+                        Content="Browse" 
+                        Grid.Column="2" 
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" 
+                        Width="75"/>
+                </StackPanel>                
+                <Image 
+                    Visibility="{Binding Path=HasImage, Converter={StaticResource VisibilityConverter}}" 
+                    Source="{Binding Path=Image, Converter={StaticResource ByteToImageConverter}}" 
+                    Width="48" 
+                    Height="48"
+                    Grid.Row="1"
+                    HorizontalAlignment="Left"/>                
+            </Grid>
+            <ListView ItemsSource="{Binding Path=Users, Mode=OneWay}" Visibility="{Binding Path=Connected, Converter={StaticResource VisibilityConverter}}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image Source="{Binding Path=State, Converter={StaticResource EnumToImageConverter}}"/>
+                            <Label Grid.Column="1" Content="{Binding Path=UserName}"/>
+                            <Label Grid.Column="2" Content="Is writing" Visibility="{Binding Path=IsWriting, Converter={StaticResource VisibilityConverter}}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+        <Grid Grid.Column="1"  Visibility="{Binding Path=Connected, Converter={StaticResource VisibilityConverter}}">
+            <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Orientation="Vertical">
+                <ListView ItemsSource="{Binding Path=Messages}" Height="250">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" >
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Visibility="{Binding Path=HasImage, Converter={StaticResource VisibilityConverter}}" Source="{Binding Path=Image, Converter={StaticResource ByteToImageConverter}}" />
+                                    <StackPanel Orientation="Vertical" Grid.Column="1">
+                                        <Label Content="{Binding Path=UserName}"/>
+                                        <Label Content="{Binding Path=Message}"/>
+                                    </StackPanel>                                    
+                                </Grid>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <TextBox 
+                    Text="{Binding Path=Message, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    HorizontalAlignment="Stretch"
+                    Height="50"  
+                    IsEnabled="{Binding Path=Connected}"
+                    AcceptsReturn="True"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

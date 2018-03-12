@@ -144,7 +144,6 @@ namespace MyChat.Client
                 {
                     if (!string.IsNullOrEmpty(value) && this.Connected && value.EndsWith(value: Environment.NewLine))
                     {
-                        this.writeInProgress = true;
                         new Action(async () =>
                         {
                             try

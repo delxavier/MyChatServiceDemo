@@ -107,9 +107,32 @@ namespace MyChat.Tests
             }
         }
 
+        [TestMethod]
+        public void TestMethodUpdateName()
+        {
+            try
+            {
+                Task.Run(async () =>
+                {
+                    var viewModel = new MainViewModel(new OutputLogger(), new CommunicationManager());
+                    viewModel.UserName = "test";
+                    await viewModel.ConnectAsync();
+                    viewModel.UserName = "new name" + Environment.NewLine;
+                    var user = viewModel.Users[0];
+                    Assert.IsTrue(string.Equals(user.UserName, viewModel.UserName));
+                }).Wait();
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(format: "Can't connect {0}", args: exception);
+                throw;
+            }
+        }
+
         private sealed class CommunicationManager : ICommunicationManager
         {
             private MyChat.Client.Model.UserState state;
+            string name;
             public bool ConnectionOpened
             {
                 get
@@ -122,7 +145,7 @@ namespace MyChat.Tests
             {
                 get
                 {
-                    throw new NotImplementedException();
+                    return new User(1) { UserName = this.name };
                 }
             }
 
@@ -145,6 +168,8 @@ namespace MyChat.Tests
                 {
                     throw Service.FaultExceptionHelper.From(ErrorType.AlreadyConnectedUser, null);
                 }
+
+                this.name = userName;
             }
 
             public Task<IReadOnlyCollection<Message>> LoadPreviousMessages(DateTime dateTime)
@@ -154,12 +179,12 @@ namespace MyChat.Tests
 
             public async Task<User> LoadUserAsync(int userId)
             {
-                return new User(1) { UserName = "test", State = this.state };
+                return new User(1) { UserName = this.name, State = this.state };
             }
 
             public async Task<IReadOnlyCollection<User>> LoadUsersAsync()
             {
-                return new[] { new User(1) { UserName = "test" } };
+                return new[] { new User(1) { UserName = this.name } };
             }
 
             public async Task SendMessageAsync(string message)
@@ -167,9 +192,10 @@ namespace MyChat.Tests
                 this.OnNewMessage?.Invoke(this, new MessageEventArgs(new Message(1, message, DateTime.UtcNow)));
             }
 
-            public Task UpdateMyProfileAsync(User user)
+            public async Task UpdateMyProfileAsync(User user)
             {
-                throw new NotImplementedException();
+                this.name = user.UserName;
+                this.OnUserUpdate(this, new UserUpdateEventArgs(1));
             }
 
             public async Task UpdateMyStatusAsync(MyChat.Client.Model.UserState state)
